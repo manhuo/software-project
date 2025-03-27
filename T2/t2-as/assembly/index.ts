@@ -40,7 +40,7 @@ function aStar(
     barriersSet.add(`${b.x},${b.y}`);
   }
   const snakeSet: Set<string> = new Set();
-  for (let i = 0; i < snake.length; i += 1) {
+  for (let i = 0; i < snake.length - 1; i += 1) {
     const s = snake[i];
     snakeSet.add(`${s.x},${s.y}`);
   }
@@ -52,6 +52,9 @@ function aStar(
     openSet.sort((a, b) => <i32>Math.trunc(a.f) - <i32>Math.trunc(b.f));
     const current = openSet.shift()!;
     closedSet.add(current.position.toString());
+
+
+    console.log(`${current.position}`);
 
     if (current.position.equals(goal)) {
       return reconstructPath(current);
@@ -81,8 +84,10 @@ function aStar(
       }
 
       // 判断是否存在该节点，并且更新 openSet
-      if (!existing || g < existing.g) {
+      if (!existing) {
         openSet.push(node);  // 如果不存在该节点，或者找到的节点的 g 值更大，则将新节点加入 openSet
+      } else if (g < existing.g) {
+        existing.g = g;
       }
 
     }
@@ -99,9 +104,9 @@ function getNeighbors(point: Point): Point[] {
   const x = point.x;
   const y = point.y;
   const neighbors = [
-    new Point(x, y - 1), // 上
+    new Point(x, y + 1), // 上
     new Point(x - 1, y), // 左
-    new Point(x, y + 1), // 下
+    new Point(x, y - 1), // 下
     new Point(x + 1, y)  // 右
   ];
 
@@ -142,9 +147,9 @@ export function greedy_snake_move_barriers(snakeArr: Int32Array, fruitArr: Int32
   const nextStep = path[1];
   const head = snake[0];
 
-  if (nextStep.x === head.x && nextStep.y === head.y - 1) return 0; // 上
+  if (nextStep.x === head.x && nextStep.y === head.y + 1) return 0; // 上
   if (nextStep.x === head.x - 1 && nextStep.y === head.y) return 1; // 左
-  if (nextStep.x === head.x && nextStep.y === head.y + 1) return 2; // 下
+  if (nextStep.x === head.x && nextStep.y === head.y - 1) return 2; // 下
   if (nextStep.x === head.x + 1 && nextStep.y === head.y) return 3; // 右
 
   return -1; // 其他情况返回不可达
