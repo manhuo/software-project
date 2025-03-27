@@ -110,7 +110,7 @@ function getNeighbors(point: Point): Point[] {
     new Point(x + 1, y)  // 右
   ];
 
-  return neighbors.filter(p => p.x >= 0 && p.x < 8 && p.y >= 0 && p.y < 8);
+  return neighbors.filter(p => p.x > 0 && p.x < 8 && p.y > 0 && p.y < 8);
 }
 
 function reconstructPath(node: Node): Point[] {
