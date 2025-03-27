@@ -49,7 +49,7 @@ function aStar(
 
   while (openSet.length > 0) {
     // 按照 f 值排序，取最优节点
-    openSet.sort((a, b) => a.f - b.f);
+    openSet.sort((a, b) => <i32>Math.trunc(a.f) - <i32>Math.trunc(b.f));
     const current = openSet.shift()!;
     closedSet.add(current.position.toString());
 
