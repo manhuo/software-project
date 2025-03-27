@@ -25,38 +25,41 @@ class Node {
   }
 }
 
+
 function aStar(
   start: Point,
   goal: Point,
   snake: Point[],
-  barriers: Point[],
-  width: number,
-  height: number
+  barriers: Point[]
 ): Point[] | null {
-  // 修改1: 将 openSet 从数组改为 Map
-  const openSet: Map<string, Node> = new Map();
+  const openSet: Node[] = [];
   const closedSet: Set<string> = new Set();
   const barriersSet: Set<string> = new Set();
-  barriers.forEach(b => barriersSet.add(`${b.x},${b.y}`));
+  for (let i = 0; i < barriers.length; i += 1) {
+    const b = barriers[i];
+    barriersSet.add(`${b.x},${b.y}`);
+  }
   const snakeSet: Set<string> = new Set();
-  snake.forEach(s => snakeSet.add(`${s.x},${s.y}`));
+  for (let i = 0; i < snake.length; i += 1) {
+    const s = snake[i];
+    snakeSet.add(`${s.x},${s.y}`);
+  }
 
-  // 修改2: 使用 Map 存储起始节点
-  openSet.set(`${start.x},${start.y}`, new Node(start, 0, manhattanDistance(start, goal)));
+  openSet.push(new Node(start, 0, manhattanDistance(start, goal)));
 
-  while (openSet.size > 0) {
-    // 修改3: 获取 f 值最小的节点（这里使用了 Map 转 Array 排序）
-    const current = Array.prototype.slice.call(openSet.values()).sort((a, b) => a.f - b.f)[0];
-    openSet.delete(`${current.position.x},${current.position.y}`); // 删除已经处理过的节点
+  while (openSet.length > 0) {
+    // 按照 f 值排序，取最优节点
+    openSet.sort((a, b) => a.f - b.f);
+    const current = openSet.shift()!;
     closedSet.add(current.position.toString());
 
     if (current.position.equals(goal)) {
       return reconstructPath(current);
     }
 
-    const neighbors: Point[] = getNeighbors(current.position, width, height) as Point[];
+    const neighbors: Point[] = getNeighbors(current.position) as Point[];
 
-    for (let i = 0; i < neighbors.length; i++) {
+    for (let i = 0; i < neighbors.length; i += 1) {
       let neighbor = neighbors[i];
       if (closedSet.has(neighbor.toString()) || barriersSet.has(neighbor.toString()) || snakeSet.has(neighbor.toString())) {
         continue;
@@ -66,11 +69,22 @@ function aStar(
       const h = manhattanDistance(neighbor, goal);
       const node = new Node(neighbor, g, h, current);
 
-      // 修改4: 使用 Map 中的 get 方法检查并更新节点
-      const existing = openSet.get(`${neighbor.x},${neighbor.y}`);
-      if (!existing || g < existing.g) {
-        openSet.set(`${neighbor.x},${neighbor.y}`, node);
+      let existing: Node | null = null;
+
+      // 手动查找一个与 neighbor 位置相同的 Node
+      for (let i = 0; i < openSet.length; i += 1) {
+        const node = openSet[i];
+        if (node.position.equals(neighbor)) {
+          existing = node;
+          break; // 找到后立刻退出循环
+        }
       }
+
+      // 判断是否存在该节点，并且更新 openSet
+      if (!existing || g < existing.g) {
+        openSet.push(node);  // 如果不存在该节点，或者找到的节点的 g 值更大，则将新节点加入 openSet
+      }
+
     }
   }
 
@@ -81,8 +95,9 @@ function manhattanDistance(a: Point, b: Point): number {
   return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
 }
 
-function getNeighbors(point: Point, width: number, height: number): Point[] {
-  const { x, y } = point;
+function getNeighbors(point: Point): Point[] {
+  const x = point.x;
+  const y = point.y;
   const neighbors = [
     new Point(x, y - 1), // 上
     new Point(x - 1, y), // 左
@@ -90,7 +105,7 @@ function getNeighbors(point: Point, width: number, height: number): Point[] {
     new Point(x + 1, y)  // 右
   ];
 
-  return neighbors.filter(p => p.x >= 0 && p.x < width && p.y >= 0 && p.y < height);
+  return neighbors.filter(p => p.x >= 0 && p.x < 8 && p.y >= 0 && p.y < 8);
 }
 
 function reconstructPath(node: Node): Point[] {
@@ -105,8 +120,6 @@ function reconstructPath(node: Node): Point[] {
 
 // 主函数
 export function greedy_snake_move_barriers(snakeArr: Int32Array, fruitArr: Int32Array, barriersArr: Int32Array): number {
-  const width = 8;
-  const height = 8;
 
   // 解析输入数据
   const snake: Point[] = [];
@@ -120,7 +133,7 @@ export function greedy_snake_move_barriers(snakeArr: Int32Array, fruitArr: Int32
   }
 
   // 使用 A* 算法寻找路径
-  const path = aStar(snake[0], fruit, snake, barriers, width, height);
+  const path = aStar(snake[0], fruit, snake, barriers);
   if (!path || path.length < 2) {
     return -1; // 无法到达果子
   }
