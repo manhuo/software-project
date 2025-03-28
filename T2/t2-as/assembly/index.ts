@@ -54,7 +54,7 @@ function aStar(
     closedSet.add(current.position.toString());
 
 
-    console.log(`${current.position}`);
+    // console.log(`${current.position}`);
 
     if (current.position.equals(goal)) {
       return reconstructPath(current);
