@@ -186,7 +186,7 @@ export function greedy_snake_step(
   for (let i = 0; i < snakeNum; i += 1) {
     let x = 0;
     let y = 0;
-    let dist = Number.MAX_SAFE_INTEGER;
+    let dist: i32 = Number.MAX_SAFE_INTEGER;
     for (let j = 0; j < foodNum; j += 1) {
       if (dist < manhattanDistance(otherSnakes[8 * i], otherSnakes[8 * i + 1], foods[2 * j], foods[2 * j + 1])) {
         x = foods[2 * j];
@@ -346,6 +346,6 @@ function isCollision(x: i32, y: i32, n: i32, snake: Int32Array, snakeNum: i32, o
 }
 
 
-function manhattanDistance(x1: number, y1: number, x2: number, y2: number): number {
+function manhattanDistance(x1: number, y1: number, x2: number, y2: number): i32 {
   return Math.abs(x1 - x2) + Math.abs(y1 - y2);
 }
