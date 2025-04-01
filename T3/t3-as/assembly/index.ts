@@ -127,7 +127,7 @@ function getNeighbors(point: Point, width: number): Point[] {
     new Point(x + 1, y)  // 右
   ];
 
-  return neighbors.filter(p => p.x > 0 && p.x < width && p.y > 0 && p.y < width);
+  return neighbors.filter(p => p.x > 0 && p.x <= width && p.y > 0 && p.y <= width);
 }
 
 function reconstructPath(node: Node): Point[] {
@@ -182,15 +182,19 @@ export function greedy_snake_step(
   foods: Int32Array,           // 果子坐标
   round: i32                   // 剩余回合数
 ): number {
-  const snakesDists: Food[][] = [];
+  const snakesDists: Food[] = [];
   for (let i = 0; i < snakeNum; i += 1) {
-    snakesDists[i] = [];
+    let x = 0;
+    let y = 0;
+    let dist = Number.MAX_SAFE_INTEGER;
     for (let j = 0; j < foodNum; j += 1) {
-      snakesDists[i][j] = new Food(foods[2 * j], foods[2 * j + 1],
-        manhattanDistance(otherSnakes[8 * i], otherSnakes[8 * i + 1], foods[2 * j], foods[2 * j + 1]));
-
+      if (dist < manhattanDistance(otherSnakes[8 * i], otherSnakes[8 * i + 1], foods[2 * j], foods[2 * j + 1])) {
+        x = foods[2 * j];
+        y = foods[2 * j + 1];
+        dist = manhattanDistance(otherSnakes[8 * i], otherSnakes[8 * i + 1], foods[2 * j], foods[2 * j + 1]);
+      }
     }
-    snakesDists[i].sort((a: Food, b: Food): i32 => a.dist - b.dist);
+    snakesDists[i] = new Food(x, y, dist);
   }
 
   const mySnakeDists: Food[] = [];
@@ -205,8 +209,8 @@ export function greedy_snake_step(
   let destFoody = 0;
   for (let i = 0; i < foodNum; i++) {
     for (let j = 0; j < snakeNum; j++) {
-      if (mySnakeDists[i].dist <= snakesDists[j][0].dist +
-        manhattanDistance(mySnakeDists[i].x, mySnakeDists[i].y, snakesDists[j][0].x, snakesDists[j][0].y)) {
+      if (mySnakeDists[i].dist <= snakesDists[j].dist +
+        manhattanDistance(mySnakeDists[i].x, mySnakeDists[i].y, snakesDists[j].x, snakesDists[j].y)) {
         destFoodx = mySnakeDists[i].x;
         destFoody = mySnakeDists[i].y;
         break;
@@ -217,7 +221,117 @@ export function greedy_snake_step(
     }
   }
 
+  if (destFoodx == 0) {
+    defensiveMove(n, snake, snakeNum, otherSnakes);
+  } else {
+
+  }
+
 }
+
+function defensiveMove(
+  n: i32,
+  snake: Int32Array,
+  snakeNum: i32,
+  otherSnakes: Int32Array
+): i32 {
+  const headx = snake[0];
+  const heady = snake[1];
+
+  const body1x = snake[2];
+  const body1y = snake[3];
+  const body2x = snake[4];
+  const body2y = snake[5];
+
+  const tailx = snake[6];
+  const taily = snake[7];
+
+  const xCoords = [headx, body1x, body2x, tailx];
+  const yCoords = [heady, body1y, body2y, taily];
+
+  let uniquex = new Set();
+  let uniquey = new Set();
+  for (let i = 0; i < xCoords.length; i++) {
+    uniquex.add(xCoords[i]);
+    uniquey.add(yCoords[i]);
+  }
+
+  if (uniquex.size == 2 && uniquey.size == 2 && Math.abs(headx - tailx) + Math.abs(heady - taily) == 1) {   //正方形
+    const xdirection = tailx - headx / Math.abs(tailx - headx);
+    const ydirection = taily - heady / Math.abs(taily - heady);
+    if (xdirection != 0) {
+      if (xdirection > 0)
+        return 3;
+      else
+        return 1;
+    }
+    if (ydirection > 0)
+      return 0;
+    else
+      return 2;
+  } else if (uniquex.size >= 2 && uniquey.size >= 2) {   //L型或z型
+    const xdirection = tailx - headx / Math.abs(tailx - headx);
+    const ydirection = taily - heady / Math.abs(taily - heady);
+    if (!isCollision(headx + xdirection, heady, n, snake, snakeNum, otherSnakes)) {
+      if (xdirection > 0)
+        return 3;
+      else
+        return 1;
+    }
+    if (!isCollision(headx, heady + ydirection, n, snake, snakeNum, otherSnakes)) {
+      if (ydirection > 0)
+        return 0;
+      else
+        return 2;
+    }
+    if (Math.abs(body2y - heady) == 2 || Math.abs(tailx - headx) == 2) {
+      if (!isCollision(headx - xdirection, heady, n, snake, snakeNum, otherSnakes)) {
+        if (-xdirection > 0)
+          return 3;
+        else
+          return 1;
+      }
+    }
+    if (-ydirection > 0)  //可能死
+      return 0;
+    else
+      return 2;
+  } else {   //一字型
+    if (Math.abs(headx - body1x) != 0) {
+      if (!isCollision(headx, heady + 1, n, snake, snakeNum, otherSnakes)) {
+        return 0;
+      }
+      if (!isCollision(headx, heady - 1, n, snake, snakeNum, otherSnakes)) {
+        return 2;
+      }
+      return 2 + headx - body1x;   //可能死
+    } else {
+      if (!isCollision(headx + 1, heady, n, snake, snakeNum, otherSnakes)) {
+        return 3;
+      }
+      if (!isCollision(headx - 1, heady, n, snake, snakeNum, otherSnakes)) {
+        return 1;
+      }
+      return 1 - heady - body1y;   //可能死
+    }
+  }
+}
+
+function isCollision(x: i32, y: i32, n: i32, snake: Int32Array, snakeNum: i32, otherSnakes: Int32Array): boolean {
+  if (x < 1 || x > n || y < 1 || y > n) return true; // 撞墙
+
+  for (let i = 0; i < 6; i += 2) {
+    if (snake[i] === x && snake[i + 1] === y) return true; // 撞到自己
+  }
+
+  for (let j = 0; j < snakeNum; j++) {
+    for (let i = 0; i < 6; i += 2) {
+      if (otherSnakes[j * 8 + i] === x && otherSnakes[j * 8 + i + 1] === y) return true; // 撞到其他蛇
+    }
+  }
+  return false;
+}
+
 
 function manhattanDistance(x1: number, y1: number, x2: number, y2: number): number {
   return Math.abs(x1 - x2) + Math.abs(y1 - y2);
