@@ -1,4 +1,18 @@
 // The entry file of your WebAssembly module.
+class Food {
+  x: i32;
+  y: i32;
+  dist: i32;
+
+  constructor(x: i32, y: i32, dist: i32) {
+    this.x = x;
+    this.y = y;
+    this.dist = dist;
+  }
+
+}
+
+
 
 export function greedySnakeStep(
   n: i32,                      // 棋盘大小
@@ -9,22 +23,24 @@ export function greedySnakeStep(
   foods: Int32Array,           // 果子坐标
   round: i32                   // 剩余回合数
 ): number {
-  const snakesMin: i32[] = [];
+  const snakesDists: Food[][] = [];
   for (let i = 0; i < snakeNum; i += 1) {
-    let x = 0;
-    let y = 0;
-    let minDist = Number.MAX_SAFE_INTEGER;
+    snakesDists[i] = [];
     for (let j = 0; j < foodNum; j += 1) {
-      const dist = manhattanDistance(otherSnakes[8 * i], otherSnakes[8 * i + 1], foods[2 * j], foods[2 * j + 1]);
-      if (dist < minDist) {
-        minDist = dist;
-        x = foods[2 * j];
-        y = foods[2 * j + 1];
-      }
+      snakesDists[i][j] = new Food(foods[2 * j], foods[2 * j + 1],
+        manhattanDistance(otherSnakes[8 * i], otherSnakes[8 * i + 1], foods[2 * j], foods[2 * j + 1]));
+
     }
-    snakesMin[2 * i] = x;
-    snakesMin[2 * i + 1] = y;
+    snakesDists[i].sort((a: Food, b: Food): i32 => a.dist - b.dist);
   }
+
+  const mySnakeDists: Food[] = [];
+  for (let j = 0; j < foodNum; j += 1) {
+    mySnakeDists[j] = new Food(foods[2 * j], foods[2 * j + 1],
+      manhattanDistance(snake[0], snake[1], foods[2 * j], foods[2 * j + 1])
+    )
+  }
+  mySnakeDists.sort((a: Food, b: Food): i32 => a.dist - b.dist);
 }
 
 function manhattanDistance(x1: number, y1: number, x2: number, y2: number): number {
