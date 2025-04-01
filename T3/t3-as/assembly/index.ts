@@ -181,7 +181,7 @@ export function greedy_snake_step(
   foodNum: i32,                // 场上果子的数量
   foods: Int32Array,           // 果子坐标
   round: i32                   // 剩余回合数
-): number {
+): i32 {
   const snakesDists: Food[] = [];
   for (let i = 0; i < snakeNum; i += 1) {
     let x = 0;
@@ -194,7 +194,7 @@ export function greedy_snake_step(
         dist = manhattanDistance(otherSnakes[8 * i], otherSnakes[8 * i + 1], foods[2 * j], foods[2 * j + 1]);
       }
     }
-    snakesDists[i] = new Food(x, y, dist);
+    snakesDists.push(new Food(x, y, dist));
   }
 
   const mySnakeDists: Food[] = [];
@@ -204,6 +204,10 @@ export function greedy_snake_step(
     )
   }
   mySnakeDists.sort((a: Food, b: Food): i32 => a.dist - b.dist);
+
+  if (mySnakeDists[0].dist >= round) {
+    return defensiveMove(n, snake, snakeNum, otherSnakes);
+  }
 
   let destFoodx = 0;
   let destFoody = 0;
@@ -221,12 +225,21 @@ export function greedy_snake_step(
     }
   }
 
+
   if (destFoodx == 0) {
-    defensiveMove(n, snake, snakeNum, otherSnakes);
+    return defensiveMove(n, snake, snakeNum, otherSnakes);
   } else {
-
+    const barriersArr: Int32Array = new Int32Array(snakeNum * 6);
+    for (let j = 0; j < snakeNum; j++) {
+      for (let i = 0; i < 6; i += 1) {
+        barriersArr[6 * j + i] = otherSnakes[8 * j + i];
+      }
+    }
+    const fruitArr: Int32Array = new Int32Array(2);
+    fruitArr[0] = destFoodx;
+    fruitArr[1] = destFoody;
+    return greedy_snake_move_barriers(snake, fruitArr, barriersArr, n);
   }
-
 }
 
 function defensiveMove(
