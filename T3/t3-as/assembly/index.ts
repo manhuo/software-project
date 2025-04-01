@@ -246,7 +246,11 @@ export function greedy_snake_step(
     const fruitArr: Int32Array = new Int32Array(2);
     fruitArr[0] = destFoodx;
     fruitArr[1] = destFoody;
-    return greedy_snake_move_barriers(snake, fruitArr, barriersArr, n);
+    let direct: i32 = greedy_snake_move_barriers(snake, fruitArr, barriersArr, n);
+    if (direct == -1)
+      return defensiveMove(n, snake, snakeNum, otherSnakes);
+    else
+      return direct;
   }
 }
 
