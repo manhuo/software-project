@@ -291,8 +291,8 @@ function defensiveMove(
     else
       return 2;
   } else if (uniquex.size >= 2 && uniquey.size >= 2) {   //L型或z型
-    const xdirection: i32 = tailx - headx / Math.abs(tailx - headx);
-    const ydirection: i32 = taily - heady / Math.abs(taily - heady);
+    const xdirection = (<i32>(tailx - headx / Math.abs(tailx - headx)));
+    const ydirection = (<i32>(taily - heady / Math.abs(taily - heady)));
     if (!isCollision(headx + xdirection, heady, n, snake, snakeNum, otherSnakes)) {
       if (xdirection > 0)
         return 3;
