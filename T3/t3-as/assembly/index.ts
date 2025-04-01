@@ -77,7 +77,7 @@ function aStar(
       return reconstructPath(current);
     }
 
-    const neighbors: Point[] = getNeighbors(current.position, width) as Point[];
+    const neighbors: Point[] = getNeighbors(current.position, width);
 
     for (let i = 0; i < neighbors.length; i += 1) {
       let neighbor = neighbors[i];
@@ -186,7 +186,7 @@ export function greedy_snake_step(
   for (let i = 0; i < snakeNum; i += 1) {
     let x = 0;
     let y = 0;
-    let dist: i32 = Number.MAX_SAFE_INTEGER;
+    let dist: i32 = 1000;
     for (let j = 0; j < foodNum; j += 1) {
       if (dist < manhattanDistance(otherSnakes[8 * i], otherSnakes[8 * i + 1], foods[2 * j], foods[2 * j + 1])) {
         x = foods[2 * j];
@@ -262,8 +262,8 @@ function defensiveMove(
   const xCoords = [headx, body1x, body2x, tailx];
   const yCoords = [heady, body1y, body2y, taily];
 
-  let uniquex = new Set();
-  let uniquey = new Set();
+  let uniquex = new Set<i32>();
+  let uniquey = new Set<i32>();
   for (let i = 0; i < xCoords.length; i++) {
     uniquex.add(xCoords[i]);
     uniquey.add(yCoords[i]);
@@ -283,8 +283,8 @@ function defensiveMove(
     else
       return 2;
   } else if (uniquex.size >= 2 && uniquey.size >= 2) {   //L型或z型
-    const xdirection = tailx - headx / Math.abs(tailx - headx);
-    const ydirection = taily - heady / Math.abs(taily - heady);
+    const xdirection: i32 = tailx - headx / Math.abs(tailx - headx);
+    const ydirection: i32 = taily - heady / Math.abs(taily - heady);
     if (!isCollision(headx + xdirection, heady, n, snake, snakeNum, otherSnakes)) {
       if (xdirection > 0)
         return 3;
@@ -346,6 +346,6 @@ function isCollision(x: i32, y: i32, n: i32, snake: Int32Array, snakeNum: i32, o
 }
 
 
-function manhattanDistance(x1: number, y1: number, x2: number, y2: number): i32 {
+function manhattanDistance(x1: i32, y1: i32, x2: i32, y2: i32): i32 {
   return Math.abs(x1 - x2) + Math.abs(y1 - y2);
 }
