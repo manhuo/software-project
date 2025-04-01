@@ -127,7 +127,15 @@ function getNeighbors(point: Point, width: number): Point[] {
     new Point(x + 1, y)  // 右
   ];
 
-  return neighbors.filter(p => p.x > 0 && p.x <= width && p.y > 0 && p.y <= width);
+  let result: Point[] = [];
+  for (let i = 0; i < neighbors.length; i++) {
+    let p = neighbors[i];
+    if (p.x > 0 && p.x <= width && p.y > 0 && p.y <= width) {
+      result.push(p);
+    }
+  }
+  return result;
+
 }
 
 function reconstructPath(node: Node): Point[] {
@@ -141,7 +149,7 @@ function reconstructPath(node: Node): Point[] {
 }
 
 
-function greedy_snake_move_barriers(snakeArr: Int32Array, fruitArr: Int32Array, barriersArr: Int32Array, width: number): number {
+function greedy_snake_move_barriers(snakeArr: Int32Array, fruitArr: Int32Array, barriersArr: Int32Array, width: number): i32 {
 
   // 解析输入数据
   const snake: Point[] = [];
@@ -270,8 +278,8 @@ function defensiveMove(
   }
 
   if (uniquex.size == 2 && uniquey.size == 2 && Math.abs(headx - tailx) + Math.abs(heady - taily) == 1) {   //正方形
-    const xdirection = tailx - headx / Math.abs(tailx - headx);
-    const ydirection = taily - heady / Math.abs(taily - heady);
+    const xdirection = (<i32>(tailx - headx / Math.abs(tailx - headx)));
+    const ydirection = (<i32>(taily - heady / Math.abs(taily - heady)));
     if (xdirection != 0) {
       if (xdirection > 0)
         return 3;
@@ -347,5 +355,5 @@ function isCollision(x: i32, y: i32, n: i32, snake: Int32Array, snakeNum: i32, o
 
 
 function manhattanDistance(x1: i32, y1: i32, x2: i32, y2: i32): i32 {
-  return Math.abs(x1 - x2) + Math.abs(y1 - y2);
+  return (<i32>Math.abs(x1 - x2)) + (<i32>Math.abs(y1 - y2));
 }
