@@ -52,19 +52,19 @@ export const gameParameters = {
   },
   "custom": {
     boardSize: 12,
-    snakeCount: 8,  // Can support more snakes
-    foodCount: 20,
-    maxRounds: 200,
+    snakeCount: 1,  // Can support more snakes
+    foodCount: 1,
+    maxRounds: 20,
     // Custom snake positions
     initialSnakePositions: [
         // Eight snakes positioned at corners and sides of the board
-        [2, 2, 2, 3, 3, 3, 4, 3],   // Top left corner
-        [11, 2, 11, 3, 10, 3, 9, 3], // Top right corner
-        [2, 11, 2, 10, 3, 10, 4, 10], // Bottom left corner
-        [11, 11, 11, 10, 10, 10, 9, 10], // Bottom right corner
-        [2, 6, 3, 6, 4, 6, 5, 6],   // Middle left
-        [11, 6, 10, 6, 9, 6, 8, 6],  // Middle right
-        [6, 2, 6, 3, 6, 4, 6, 5],    // Middle top
+       // [2, 2, 2, 3, 3, 3, 4, 3],   // Top left corner
+       // [11, 2, 11, 3, 10, 3, 9, 3], // Top right corner
+        //[2, 11, 2, 10, 3, 10, 4, 10], // Bottom left corner
+        //[11, 11, 11, 10, 10, 10, 9, 10], // Bottom right corner
+       // [2, 6, 3, 6, 4, 6, 5, 6],   // Middle left
+       // [11, 6, 10, 6, 9, 6, 8, 6],  // Middle right
+       // [6, 2, 6, 3, 6, 4, 6, 5],    // Middle top
         [6, 11, 6, 10, 6, 9, 6, 8]   // Middle bottom
     ]
   }

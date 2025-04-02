@@ -218,7 +218,9 @@ export function greedy_snake_step(
   mySnakeDists.sort((a: Food, b: Food): i32 => a.dist - b.dist);
 
   if (mySnakeDists[0].dist >= round) {
-    return defensiveMove(n, snake, snakeNum, otherSnakes);
+    const direct1: i32 = defensiveMove(n, snake, snakeNum, otherSnakes);
+    console.log(`${snake[0]},${snake[1]}:direct1,${direct1}`);
+    return direct1;
   }
 
 
@@ -269,11 +271,11 @@ export function greedy_snake_step(
 
     if (direct == -1) {
       const direct1: i32 = defensiveMove(n, snake, snakeNum, otherSnakes);
-      // console.log(`${snake[0]},${snake[1]}:direct1,${direct1}`);
+      console.log(`${snake[0]},${snake[1]}:direct1,${direct1}`);
       return direct1;
     }
     else {
-      // console.log(`${snake[0]},${snake[1]}:direct,${direct}`);
+      console.log(`${snake[0]},${snake[1]}:direct,${direct}`);
       return direct;
     }
   }
@@ -308,9 +310,9 @@ function defensiveMove(
 
 
   if (uniquex.size == 2 && uniquey.size == 2 && Math.abs(headx - tailx) + Math.abs(heady - taily) == 1) {   //正方形
-    const xdirection = (<i32>(tailx - headx / Math.abs(tailx - headx)));
-    const ydirection = (<i32>(taily - heady / Math.abs(taily - heady)));
-    // console.log(`defensive:${xdirection},${ydirection}`)
+    const xdirection = (<i32>(tailx - headx == 0 ? 0 : tailx - headx / Math.abs(tailx - headx)));
+    const ydirection = (<i32>(taily - heady == 0 ? 0 : taily - heady / Math.abs(taily - heady)));
+    console.log(`defensive:${xdirection},${ydirection}`)
     if (xdirection != 0) {
       if (xdirection > 0)
         return 3;
@@ -322,8 +324,8 @@ function defensiveMove(
     else
       return 2;
   } else if (uniquex.size >= 2 && uniquey.size >= 2) {   //L型或z型
-    const xdirection = (<i32>(tailx - headx / Math.abs(tailx - headx)));
-    const ydirection = (<i32>(taily - heady / Math.abs(taily - heady)));
+    const xdirection = (<i32>(tailx - headx == 0 ? 0 : tailx - headx / Math.abs(tailx - headx)));
+    const ydirection = (<i32>(taily - heady == 0 ? 0 : taily - heady / Math.abs(taily - heady)));
     if (!isFurtherCollision(headx + xdirection, heady, n, snake, snakeNum, otherSnakes)) {
       if (xdirection > 0)
         return 3;
