@@ -71,7 +71,7 @@ function aStar(
     closedSet.add(current.position.toString());
 
 
-    console.log(`${current.position}`);
+    // console.log(`${current.position}`);
 
     if (current.position.equals(goal)) {
       return reconstructPath(current);
@@ -81,9 +81,9 @@ function aStar(
 
     for (let i = 0; i < neighbors.length; i += 1) {
       let neighbor: Point = neighbors[i];
-      console.log(`astar:${neighbor.x},${neighbor.y}`);
-      console.log(`${barriersSet.has(neighbor.toString())}`);
-      console.log(`${snakeSet.has(neighbor.toString())}`);
+      // console.log(`astar:${neighbor.x},${neighbor.y}`);
+      // console.log(`${barriersSet.has(neighbor.toString())}`);
+      // console.log(`${snakeSet.has(neighbor.toString())}`);
       if (closedSet.has(neighbor.toString()) || barriersSet.has(neighbor.toString()) || snakeSet.has(neighbor.toString())
       ) {
         continue;
@@ -244,7 +244,7 @@ export function greedy_snake_step(
   }
 
 
-  console.log(`${snakeNum},${destFoodx},${destFoody}`);
+  // console.log(`${snakeNum},${destFoodx},${destFoody}`);
 
   if (destFoodx == 0) {
     return defensiveMove(n, snake, snakeNum, otherSnakes);
@@ -269,11 +269,11 @@ export function greedy_snake_step(
 
     if (direct == -1) {
       const direct1: i32 = defensiveMove(n, snake, snakeNum, otherSnakes);
-      console.log(`${snake[0]},${snake[1]}:direct1,${direct1}`);
-      return defensiveMove(n, snake, snakeNum, otherSnakes);
+      // console.log(`${snake[0]},${snake[1]}:direct1,${direct1}`);
+      return direct1;
     }
     else {
-      console.log(`${snake[0]},${snake[1]}:direct,${direct}`);
+      // console.log(`${snake[0]},${snake[1]}:direct,${direct}`);
       return direct;
     }
   }
@@ -310,7 +310,7 @@ function defensiveMove(
   if (uniquex.size == 2 && uniquey.size == 2 && Math.abs(headx - tailx) + Math.abs(heady - taily) == 1) {   //正方形
     const xdirection = (<i32>(tailx - headx / Math.abs(tailx - headx)));
     const ydirection = (<i32>(taily - heady / Math.abs(taily - heady)));
-    console.log(`defensive:${xdirection},${ydirection}`)
+    // console.log(`defensive:${xdirection},${ydirection}`)
     if (xdirection != 0) {
       if (xdirection > 0)
         return 3;
