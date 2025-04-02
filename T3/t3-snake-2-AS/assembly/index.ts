@@ -71,17 +71,21 @@ function aStar(
     closedSet.add(current.position.toString());
 
 
-    // console.log(`${current.position}`);
+    console.log(`${current.position}`);
 
     if (current.position.equals(goal)) {
       return reconstructPath(current);
     }
 
-    const neighbors: Point[] = getNeighbors(current.position, width);
+    const neighbors: Point[] = getNeighbors(current.position, width) as Point[];
 
     for (let i = 0; i < neighbors.length; i += 1) {
-      let neighbor = neighbors[i];
-      if (closedSet.has(neighbor.toString()) || barriersSet.has(neighbor.toString()) || snakeSet.has(neighbor.toString())) {
+      let neighbor: Point = neighbors[i];
+      console.log(`astar:${neighbor.x},${neighbor.y}`);
+      console.log(`${barriersSet.has(neighbor.toString())}`);
+      console.log(`${snakeSet.has(neighbor.toString())}`);
+      if (closedSet.has(neighbor.toString()) || barriersSet.has(neighbor.toString()) || snakeSet.has(neighbor.toString())
+      ) {
         continue;
       }
 
@@ -217,11 +221,12 @@ export function greedy_snake_step(
     return defensiveMove(n, snake, snakeNum, otherSnakes);
   }
 
+
   let destFoodx = 0;
   let destFoody = 0;
-  for (let i = 0; i < foodNum; i++) {
+  for (let i = 0; i < foodNum / 2; i++) {
     for (let j = 0; j < snakeNum; j++) {
-      if (mySnakeDists[i].dist <= snakesDists[j].dist +
+      if (mySnakeDists[i].dist < snakesDists[j].dist +
         manhattanDistance(mySnakeDists[i].x, mySnakeDists[i].y, snakesDists[j].x, snakesDists[j].y)) {
         destFoodx = mySnakeDists[i].x;
         destFoody = mySnakeDists[i].y;
@@ -233,20 +238,44 @@ export function greedy_snake_step(
     }
   }
 
+  if (snakeNum == 0) {
+    destFoodx = mySnakeDists[0].x;
+    destFoody = mySnakeDists[0].y;
+  }
+
+
+  console.log(`${snakeNum},${destFoodx},${destFoody}`);
 
   if (destFoodx == 0) {
     return defensiveMove(n, snake, snakeNum, otherSnakes);
   } else {
-    const barriersArr: Int32Array = new Int32Array(snakeNum * 6);
-    for (let j = 0; j < snakeNum; j++) {
-      for (let i = 0; i < 6; i += 1) {
-        barriersArr[6 * j + i] = otherSnakes[8 * j + i];
+    const barriersArr1: i32[] = [];
+    for (let i = 1; i <= n; i++) {
+      for (let j = 1; j <= n; j++) {
+        if (isFurtherCollision(i, j, n, snake, snakeNum, otherSnakes)) {
+          barriersArr1.push(i);
+          barriersArr1.push(j);
+        }
       }
+    }
+    const barriersArr: Int32Array = new Int32Array(barriersArr1.length);
+    for (let i = 0; i < barriersArr1.length; i++) {
+      barriersArr[i] = barriersArr1[i];
     }
     const fruitArr: Int32Array = new Int32Array(2);
     fruitArr[0] = destFoodx;
     fruitArr[1] = destFoody;
-    return greedy_snake_move_barriers(snake, fruitArr, barriersArr, n);
+    let direct: i32 = greedy_snake_move_barriers(snake, fruitArr, barriersArr, n);
+
+    if (direct == -1) {
+      const direct1: i32 = defensiveMove(n, snake, snakeNum, otherSnakes);
+      console.log(`${snake[0]},${snake[1]}:direct1,${direct1}`);
+      return defensiveMove(n, snake, snakeNum, otherSnakes);
+    }
+    else {
+      console.log(`${snake[0]},${snake[1]}:direct,${direct}`);
+      return direct;
+    }
   }
 }
 
@@ -277,9 +306,11 @@ function defensiveMove(
     uniquey.add(yCoords[i]);
   }
 
+
   if (uniquex.size == 2 && uniquey.size == 2 && Math.abs(headx - tailx) + Math.abs(heady - taily) == 1) {   //正方形
     const xdirection = (<i32>(tailx - headx / Math.abs(tailx - headx)));
     const ydirection = (<i32>(taily - heady / Math.abs(taily - heady)));
+    console.log(`defensive:${xdirection},${ydirection}`)
     if (xdirection != 0) {
       if (xdirection > 0)
         return 3;
@@ -293,20 +324,21 @@ function defensiveMove(
   } else if (uniquex.size >= 2 && uniquey.size >= 2) {   //L型或z型
     const xdirection = (<i32>(tailx - headx / Math.abs(tailx - headx)));
     const ydirection = (<i32>(taily - heady / Math.abs(taily - heady)));
-    if (!isCollision(headx + xdirection, heady, n, snake, snakeNum, otherSnakes)) {
+    if (!isFurtherCollision(headx + xdirection, heady, n, snake, snakeNum, otherSnakes)) {
       if (xdirection > 0)
         return 3;
       else
         return 1;
     }
-    if (!isCollision(headx, heady + ydirection, n, snake, snakeNum, otherSnakes)) {
+    if (!isFurtherCollision(headx, heady + ydirection, n, snake, snakeNum, otherSnakes)) {
       if (ydirection > 0)
         return 0;
       else
         return 2;
     }
-    if (Math.abs(body2y - heady) == 2 || Math.abs(tailx - headx) == 2) {
-      if (!isCollision(headx - xdirection, heady, n, snake, snakeNum, otherSnakes)) {
+    if (Math.abs(body2y - heady) == 2 || Math.abs(tailx - headx) == 2 ||
+      isFurtherCollision(headx, heady - ydirection, n, snake, snakeNum, otherSnakes)) {
+      if (!isFurtherCollision(headx - xdirection, heady, n, snake, snakeNum, otherSnakes)) {
         if (-xdirection > 0)
           return 3;
         else
@@ -319,30 +351,32 @@ function defensiveMove(
       return 2;
   } else {   //一字型
     if (Math.abs(headx - body1x) != 0) {
-      if (!isCollision(headx, heady + 1, n, snake, snakeNum, otherSnakes)) {
+      if (!isFurtherCollision(headx, heady + 1, n, snake, snakeNum, otherSnakes)) {
         return 0;
       }
-      if (!isCollision(headx, heady - 1, n, snake, snakeNum, otherSnakes)) {
+      if (!isFurtherCollision(headx, heady - 1, n, snake, snakeNum, otherSnakes)) {
         return 2;
       }
       return 2 + headx - body1x;   //可能死
     } else {
-      if (!isCollision(headx + 1, heady, n, snake, snakeNum, otherSnakes)) {
+      if (!isFurtherCollision(headx + 1, heady, n, snake, snakeNum, otherSnakes)) {
         return 3;
       }
-      if (!isCollision(headx - 1, heady, n, snake, snakeNum, otherSnakes)) {
+      if (!isFurtherCollision(headx - 1, heady, n, snake, snakeNum, otherSnakes)) {
         return 1;
       }
-      return 1 - heady - body1y;   //可能死
+      return 1 - (heady - body1y);   //可能死
     }
   }
 }
 
-function isCollision(x: i32, y: i32, n: i32, snake: Int32Array, snakeNum: i32, otherSnakes: Int32Array): boolean {
+function isCollision(x: i32, y: i32, n: i32, snake: Int32Array, snakeNum: i32, otherSnakes: Int32Array, ignoreSelf: boolean = false): boolean {
   if (x < 1 || x > n || y < 1 || y > n) return true; // 撞墙
 
-  for (let i = 0; i < 6; i += 2) {
-    if (snake[i] === x && snake[i + 1] === y) return true; // 撞到自己
+  if (!ignoreSelf) {
+    for (let i = 0; i < 6; i += 2) {
+      if (snake[i] === x && snake[i + 1] === y) return true; // 撞到自己
+    }
   }
 
   for (let j = 0; j < snakeNum; j++) {
@@ -352,6 +386,20 @@ function isCollision(x: i32, y: i32, n: i32, snake: Int32Array, snakeNum: i32, o
   }
   return false;
 }
+
+function isFurtherCollision(x: i32, y: i32, n: i32, snake: Int32Array, snakeNum: i32, otherSnakes: Int32Array): boolean {
+  if (isCollision(x, y, n, snake, snakeNum, otherSnakes)) return true;
+  let total: i32 = 0;
+  if (isCollision(x - 1, y, n, snake, snakeNum, otherSnakes, true)) total++;
+  if (isCollision(x + 1, y, n, snake, snakeNum, otherSnakes, true)) total++;
+  if (isCollision(x, y - 1, n, snake, snakeNum, otherSnakes, true)) total++;
+  if (isCollision(x, y + 1, n, snake, snakeNum, otherSnakes, true)) total++;
+  if (total >= 3) {
+    return true;
+  }
+  return false;
+}
+
 
 
 function manhattanDistance(x1: i32, y1: i32, x2: i32, y2: i32): i32 {
