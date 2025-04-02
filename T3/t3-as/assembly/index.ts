@@ -227,6 +227,8 @@ export function greedy_snake_step(
   let destFoodx = 0;
   let destFoody = 0;
   for (let i = 0; i < foodNum / 2; i++) {
+    if (inCorner(mySnakeDists[i].x, mySnakeDists[i].y, n))
+      continue;
     for (let j = 0; j < snakeNum; j++) {
       if (mySnakeDists[i].dist < snakesDists[j].dist +
         manhattanDistance(mySnakeDists[i].x, mySnakeDists[i].y, snakesDists[j].x, snakesDists[j].y)) {
@@ -402,7 +404,18 @@ function isFurtherCollision(x: i32, y: i32, n: i32, snake: Int32Array, snakeNum:
   return false;
 }
 
-
+function inCorner(x: i32, y: i32, n: i32): boolean {
+  let n1: i32 = <i32>n / 4;
+  n1 -= 1;
+  if ((Math.abs(x - 1) <= n1 && Math.abs(y - 1) <= n1)
+    || (Math.abs(x - 1) <= n1 && Math.abs(y - n) <= n1)
+    || (Math.abs(x - n) <= n1 && Math.abs(y - 1) <= n1)
+    || (Math.abs(x - n) <= n1 && Math.abs(y - n) <= n1)) {
+    return true;
+  } else {
+    return false;
+  }
+}
 
 function manhattanDistance(x1: i32, y1: i32, x2: i32, y2: i32): i32 {
   return (<i32>Math.abs(x1 - x2)) + (<i32>Math.abs(y1 - y2));
