@@ -47,7 +47,8 @@ function aStar(
   goal: Point,
   snake: Point[],
   barriers: Point[],
-  width: number
+  width: number,
+  selfMove: boolean = false
 ): Point[] | null {
   const openSet: Node[] = [];
   const closedSet: Set<string> = new Set();
@@ -89,7 +90,16 @@ function aStar(
         continue;
       }
 
-      const g = current.g + 1;
+      let g: number = 0;
+      if (selfMove && (neighbor.x - 1 <= (width == 5 ? 1 : 2) || width - neighbor.x <= (width == 5 ? 1 : 2)
+        || neighbor.y - 1 <= (width == 5 ? 1 : 2) || width - neighbor.y <= (width == 5 ? 1 : 2))) {
+        let min = Math.min(neighbor.x - 1, width - neighbor.x);
+        min = Math.min(min, neighbor.y - 1);
+        min = Math.min(min, width - neighbor.y);
+        g = current.g + 1 + 0.25 * Math.pow(2, (width == 5 ? 1 : 2) - min);
+      } else {
+        g = current.g + 1;
+      }
       const h = manhattanDistance1(neighbor, goal);
       const node = new Node(neighbor, g, h, current);
 
@@ -167,7 +177,7 @@ function greedy_snake_move_barriers(snakeArr: Int32Array, fruitArr: Int32Array, 
   }
 
   // 使用 A* 算法寻找路径
-  const path = aStar(snake[0], fruit, snake, barriers, width);
+  const path = aStar(snake[0], fruit, snake, barriers, width, true);
   if (!path || path.length < 2) {
     return -1; // 无法到达果子
   }
@@ -238,9 +248,13 @@ export function greedy_snake_step(
   nowSnake.push((new Point(snake[4], snake[5])));
   nowSnake.push((new Point(snake[6], snake[7])));
   for (let j = 0; j < foodNum; j += 1) {
-    const path = aStar(new Point(snake[0], snake[1]), new Point(foods[2 * j], foods[2 * j + 1]), nowSnake, barriersArr1, n);
+    const path = aStar(new Point(snake[0], snake[1]), new Point(foods[2 * j], foods[2 * j + 1]), nowSnake, barriersArr1, n, true);
+    if (path && path.length >= 2) {
+      // console.log(`${path.length}`);
+    }
     mySnakeDists[j] = new Food(foods[2 * j], foods[2 * j + 1], !path || path.length < 2 ? 1000 : path.length);
   }
+  // console.log(" ");
   mySnakeDists.sort((a: Food, b: Food): i32 => a.dist - b.dist);
 
   if (mySnakeDists[0].dist >= round) {
@@ -252,18 +266,19 @@ export function greedy_snake_step(
 
   let destFoodx = 0;
   let destFoody = 0;
-  for (let i = 0; i < foodNum / 2; i++) {
+  for (let i = 0; i < foodNum; i++) {
     if (inCorner(mySnakeDists[i].x, mySnakeDists[i].y, n))
       continue;
+    let okNum = 0;
     for (let j = 0; j < snakeNum; j++) {
       if (mySnakeDists[i].dist < snakesDists[j].dist +
         manhattanDistance(mySnakeDists[i].x, mySnakeDists[i].y, snakesDists[j].x, snakesDists[j].y)) {
-        destFoodx = mySnakeDists[i].x;
-        destFoody = mySnakeDists[i].y;
-        break;
+        okNum++;
       }
     }
-    if (destFoodx != 0) {
+    if (okNum == snakeNum) {
+      destFoodx = mySnakeDists[i].x;
+      destFoody = mySnakeDists[i].y;
       break;
     }
   }
@@ -338,8 +353,8 @@ function defensiveMove(
 
 
   if (uniquex.size == 2 && uniquey.size == 2 && Math.abs(headx - tailx) + Math.abs(heady - taily) == 1) {   //正方形
-    const xdirection = (<i32>(tailx - headx == 0 ? 0 : tailx - headx / Math.abs(tailx - headx)));
-    const ydirection = (<i32>(taily - heady == 0 ? 0 : taily - heady / Math.abs(taily - heady)));
+    const xdirection = (<i32>(tailx - headx == 0 ? 0 : (tailx - headx) / Math.abs(tailx - headx)));
+    const ydirection = (<i32>(taily - heady == 0 ? 0 : (taily - heady) / Math.abs(taily - heady)));
     // console.log(`defensive:${xdirection},${ydirection}`)
     if (xdirection != 0) {
       if (xdirection > 0)
@@ -352,8 +367,9 @@ function defensiveMove(
     else
       return 2;
   } else if (uniquex.size >= 2 && uniquey.size >= 2) {   //L型或z型
-    const xdirection = (<i32>(tailx - headx == 0 ? 0 : tailx - headx / Math.abs(tailx - headx)));
-    const ydirection = (<i32>(taily - heady == 0 ? 0 : taily - heady / Math.abs(taily - heady)));
+    const xdirection = (<i32>(tailx - headx == 0 ? 0 : (tailx - headx) / Math.abs(tailx - headx)));
+    const ydirection = (<i32>(taily - heady == 0 ? 0 : (taily - heady) / Math.abs(taily - heady)));
+    // console.log(`defensive:${xdirection},${ydirection}`);
     if (!isFurtherCollision(headx + xdirection, heady, n, snake, snakeNum, otherSnakes)) {
       if (xdirection > 0)
         return 3;
