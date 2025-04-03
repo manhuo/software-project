@@ -199,21 +199,47 @@ export function greedy_snake_step(
     let x = 0;
     let y = 0;
     let dist: i32 = 1000;
+    const barriersArr1: Point[] = [];
+    for (let i = 1; i <= n; i++) {
+      for (let j = 1; j <= n; j++) {
+        if (isFurtherCollision(i, j, n, snake, snakeNum, otherSnakes)) {
+          barriersArr1.push(new Point(i, j));
+        }
+      }
+    }
+    const nowSnake: Point[] = [];
+    nowSnake.push((new Point(otherSnakes[8 * i], otherSnakes[8 * i + 1])));
+    nowSnake.push((new Point(otherSnakes[8 * i + 2], otherSnakes[8 * i + 3])));
+    nowSnake.push((new Point(otherSnakes[8 * i + 4], otherSnakes[8 * i + 5])));
+    nowSnake.push((new Point(otherSnakes[8 * i + 6], otherSnakes[8 * i + 7])));
     for (let j = 0; j < foodNum; j += 1) {
-      if (dist < manhattanDistance(otherSnakes[8 * i], otherSnakes[8 * i + 1], foods[2 * j], foods[2 * j + 1])) {
+      const path = aStar(new Point(otherSnakes[8 * i], otherSnakes[8 * i + 1]), new Point(foods[2 * j], foods[2 * j + 1]), nowSnake, barriersArr1, n);
+      if (dist > (!path || path.length < 2 ? 1000 : path.length)) {
         x = foods[2 * j];
         y = foods[2 * j + 1];
-        dist = manhattanDistance(otherSnakes[8 * i], otherSnakes[8 * i + 1], foods[2 * j], foods[2 * j + 1]);
+        dist = path!.length;
       }
     }
     snakesDists.push(new Food(x, y, dist));
   }
 
   const mySnakeDists: Food[] = [];
+  const barriersArr1: Point[] = [];
+  for (let i = 1; i <= n; i++) {
+    for (let j = 1; j <= n; j++) {
+      if (isFurtherCollision(i, j, n, snake, snakeNum, otherSnakes)) {
+        barriersArr1.push(new Point(i, j));
+      }
+    }
+  }
+  const nowSnake: Point[] = [];
+  nowSnake.push((new Point(snake[0], snake[1])));
+  nowSnake.push((new Point(snake[2], snake[3])));
+  nowSnake.push((new Point(snake[4], snake[5])));
+  nowSnake.push((new Point(snake[6], snake[7])));
   for (let j = 0; j < foodNum; j += 1) {
-    mySnakeDists[j] = new Food(foods[2 * j], foods[2 * j + 1],
-      manhattanDistance(snake[0], snake[1], foods[2 * j], foods[2 * j + 1])
-    )
+    const path = aStar(new Point(snake[0], snake[1]), new Point(foods[2 * j], foods[2 * j + 1]), nowSnake, barriersArr1, n);
+    mySnakeDists[j] = new Food(foods[2 * j], foods[2 * j + 1], !path || path.length < 2 ? 1000 : path.length);
   }
   mySnakeDists.sort((a: Food, b: Food): i32 => a.dist - b.dist);
 
